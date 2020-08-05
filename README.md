@@ -1,5 +1,5 @@
 # OrderManagementSystem
-1) need to configure git uri 
+1) need to configure git uri for configserverdemo app
 in my case 
 spring.cloud.config.server.git.uri= file:///E:/git_config/configserverrepo
 
