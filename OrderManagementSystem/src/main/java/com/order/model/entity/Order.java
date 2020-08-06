@@ -12,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 @Entity
 @Table(name="orderdata")
 public class Order {
@@ -21,13 +23,22 @@ public class Order {
 	private Integer customerId;
 	private String customerName;
 	private Date orderDate;
-	@OneToOne
+	@OneToOne(cascade = {CascadeType.ALL})
 	private Address shippingAddress;
+	//@ManyToMany
+	//@JsonManagedReference
+	//@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")
 	/*
 	 * @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE,
-	 * CascadeType.REFRESH })
+	 * CascadeType.REFRESH }, mappedBy = "order")
 	 */
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "order")
+	//@OneToMany
+	@JsonManagedReference
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "order",fetch = FetchType.LAZY)
+	/*
+	 * @OneToMany(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE,
+	 * CascadeType.PERSIST }, mappedBy = "order")
+	 */
 	private List<Product> items;
 	private Double totalAmount;
 

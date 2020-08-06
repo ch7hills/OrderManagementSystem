@@ -1,15 +1,16 @@
 package com.order.model.entity;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 @Entity
-public class Product {
+public class ProductsStrore {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	int id;
@@ -17,11 +18,7 @@ public class Product {
 	String name;
 	Integer quantity;
 	Integer cost;
-	@JsonBackReference
-	//@ManyToOne
-	@ManyToOne(targetEntity = Order.class)//(fetch = FetchType.LAZY)
-    @JoinColumn(name="order_id")
-	Order order;
+	
 
 	public int getId() {
 		return id;
@@ -63,18 +60,10 @@ public class Product {
 		this.cost = cost;
 	}
 
-	public Order getOrder() {
-		return order;
-	}
-
-	public void setOrder(Order order) {
-		this.order = order;
-	}
-
 	@Override
 	public String toString() {
-		return "Product [id=" + id + ", code=" + code + ", name=" + name + ", quantity=" + quantity + ", cost=" + cost
-				+ ", order=" + order + "]";
+		return "ProductsStrore [id=" + id + ", code=" + code + ", name=" + name + ", quantity=" + quantity + ", cost="
+				+ cost + "]";
 	}
 	
 }

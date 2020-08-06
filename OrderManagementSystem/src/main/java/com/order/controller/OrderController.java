@@ -48,4 +48,10 @@ public class OrderController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@GetMapping("/getProductsByOrderId/{orderId}")
+	public ResponseEntity getProductsByOrderId(@PathVariable("orderId") Integer orderId) {
+		Response response = new Response(new Date(), Status.SUCCESS, orderService.getProductsByOrderId(orderId));
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 }

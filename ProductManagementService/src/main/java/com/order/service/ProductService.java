@@ -10,22 +10,29 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.order.exceptions.CustomException;
 import com.order.exceptions.ItemNotfoundException;
+import com.order.exceptions.OrderNotfoundException;
 import com.order.model.entity.Order;
 import com.order.model.entity.Product;
+import com.order.model.entity.ProductsStrore;
+import com.order.repository.OrderRepository;
 import com.order.repository.ProductRepository;
+import com.order.repository.ProductStroreRepository;
 
 @Service
 @Transactional
 public class ProductService {
 	@Autowired
 	ProductRepository productRepo;
-	/*
+	
 	@Autowired
 	OrderRepository orderRepo;
-	*/
 	
-	public List<Product> getAllProducts(){
-		return productRepo.findAll();
+	@Autowired
+	ProductStroreRepository ProductStroreRepo;
+	
+	
+	public List<ProductsStrore> getAllProducts(){
+		return ProductStroreRepo.findAll();
 	}
 	
 	public Product getProductById(Integer productId){
@@ -49,7 +56,7 @@ public class ProductService {
 	public Boolean processOrder(Order order) throws CustomException{
 		double total=0;
 		for(Product prd:order.getItems()) {
-			Optional<Product> availableProudctOpt = productRepo.findById(prd.getId());
+			Optional<ProductsStrore> availableProudctOpt = ProductStroreRepo.findById(prd.getId());
 			if(!availableProudctOpt.isPresent()) {
 				throw new ItemNotfoundException("Product not found:"+prd.getId());
 			}
@@ -59,13 +66,13 @@ public class ProductService {
 			if(prd.getCost() ==null &&  !(prd.getCost() > 0)) {
 				throw new CustomException("Invalid cost for Product:"+prd.getId());
 			}
-			Product availableProudct = availableProudctOpt.get();
+			ProductsStrore availableProudct = availableProudctOpt.get();
 			if(prd.getQuantity()<=availableProudct.getQuantity()) {
 				
 				synchronized(this){//synchronized block  
 					availableProudct.setQuantity(availableProudct.getQuantity()-prd.getQuantity());
-					productRepo.save(availableProudct);
-					total = total+availableProudct.getCost();
+					ProductStroreRepo.save(availableProudct);
+					total = total+(availableProudct.getCost()*prd.getQuantity());
 				}
 			}else {
 				throw new ItemNotfoundException("Product not available:"+prd.getId());
@@ -75,10 +82,10 @@ public class ProductService {
 		return true;
 	}
 	
-	public List<Product> loadProducts() {
-		List<Product> products = new ArrayList<>();
+	public List<ProductsStrore> loadProducts() {
+		List<ProductsStrore> products = new ArrayList<>();
 		for(int i=1;i<=100;i++) {
-			Product p= new Product();
+			ProductsStrore p= new ProductsStrore();
 			//p.setId(i);
 			p.setCode(i);
 			p.setName("Product"+i);
@@ -86,7 +93,16 @@ public class ProductService {
 			p.setQuantity(1000);
 			products.add(p);
 		}
-		return productRepo.saveAll(products);
+		return ProductStroreRepo.saveAll(products);
+	}
+
+	public  List<Product> getProductsByOrderId(Integer orderId) {
+		Optional<Order> orderOpt = orderRepo.findById(orderId);
+		if(orderOpt.isPresent()) {
+			return orderOpt.get().getItems();
+		}else {
+			throw new OrderNotfoundException("Order not found:"+orderId);
+		}
 	}
 	
 }

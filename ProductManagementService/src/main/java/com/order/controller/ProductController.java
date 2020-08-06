@@ -55,5 +55,11 @@ public class ProductController {
 		Response response = new Response(new Date(), Status.SUCCESS, productService.loadProducts());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	
+	@GetMapping("/getProductsByOrderId/{orderId}")
+	public ResponseEntity getProductsByOrderId(@PathVariable("orderId") Integer orderId) {
+		Response response = new Response(new Date(), Status.SUCCESS, productService.getProductsByOrderId(orderId));
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 }

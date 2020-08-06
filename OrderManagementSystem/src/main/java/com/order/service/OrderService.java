@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,49 +35,52 @@ public class OrderService {
 	private AddressRepository addressRepo;
 	@Autowired
 	CustomerRepository custRepo;
-	
+
 	@Autowired
 	private OrderItemsFeignClient orderItemsFeignClient;
-	
-	public List<Order> getAllOrders(){
+
+	public static final Logger log = LoggerFactory.getLogger(OrderService.class);
+
+	public List<Order> getAllOrders() {
 		return orderRepo.findAll();
 	}
-	
-	public Order getOrderById(Integer orderId){
+
+	public Order getOrderById(Integer orderId) {
 		Optional<Order> orderOpt = orderRepo.findById(orderId);
-		if(orderOpt.isPresent()) {
+		log.info("orderId: {},orderOpt:{}", orderId, orderOpt);
+		System.out.println("orderId:" + orderId);
+		System.out.println("orderOpt:" + orderOpt);
+		if (orderOpt.isPresent()) {
 			return orderOpt.get();
-		}else {
-			throw new OrderNotfoundException("Order not found:"+orderId);
+		} else {
+			throw new OrderNotfoundException("Order not found:" + orderId);
 		}
 	}
-	
+
 	public Order processOrder(Order order) throws CustomException {
-		Response prdResponse = orderItemsFeignClient.processOrder(order);
-		if(null==order.getShippingAddress()) {
+		
+		if (null == order.getShippingAddress()) {
 			throw new CustomException("Shipping Address should not be Null");
 		}
-		if(order.getItems().isEmpty()) {
+		if (order.getItems().isEmpty()) {
 			throw new CustomException("Products should not be empty");
 		}
-		if(prdResponse.getStatus().equals(Status.SUCCESS)) {
-			List<Product> products = productRepo.saveAll(order.getItems());
-			order.setItems(products);
-			Address address = addressRepo.save(order.getShippingAddress());
-			order.setShippingAddress(address);
-			
-			order = orderRepo.save(order);
+		order = orderRepo.save(order);
+		int orderId= order.getId();
+		Response prdResponse = orderItemsFeignClient.processOrder(order);
+		if (!prdResponse.getStatus().equals(Status.SUCCESS)) {
+			throw new CustomException("Something went wrong");
 		}
 		return order;
 	}
-	
-	public Product getOrderProductsByOrderId(Integer productId){
-		Response prdResponse = orderItemsFeignClient.getProductById(productId);
-		Product product=null;
-		if(prdResponse.getStatus().equals(Status.SUCCESS)) {
-			product=  (Product) prdResponse.getData();
+
+	public List<Product> getProductsByOrderId(Integer productId) {
+		Response prdResponse = orderItemsFeignClient.getProductsByOrderId(productId);
+		List<Product> products = new ArrayList<>();
+		if (prdResponse.getStatus().equals(Status.SUCCESS)) {
+			products = (List<Product>) prdResponse.getData();
 		}
-		return product;
+		return products;
 	}
 
 	public Order testOrder() throws CustomException {
@@ -83,21 +89,22 @@ public class OrderService {
 		order.setCustomerId(1);
 		order.setOrderDate(new Date());
 		List<Product> orderItems = new ArrayList<>();
-		double total=0;
-		for(int i=1;i<=10;i++) {
-			Product p =new Product();
+		double total = 0;
+		long count = productRepo.count();
+		for (long i=count + 1; i <= count+10; i++) {
+			Product p = new Product();
 			p.setCode(i);
-			p.setId(i);
-			p.setName("Product"+i);
+			//p.setId(i);
+			p.setName("Product" + i);
 			p.setQuantity(1);
 			p.setCost(10);
 			orderItems.add(p);
-			total=total+i+10;
-			
+			total = total + (1 * 10);
+
 		}
 		order.setItems(orderItems);
 		Address shippingAddress = new Address();
-		shippingAddress.setId(1);
+		//shippingAddress.setId(1);
 		shippingAddress.setPincode("12345");
 		shippingAddress.setStreetName("100 feet");
 		shippingAddress.setVillage("Madhapur");
