@@ -20,7 +20,7 @@ public class ProducerController {
 	@GetMapping("/send")
 	public String sendData() {
 		Map<String,String> input =new HashMap<>();
-		for(int i=1;i<1000;i++) {
+		for(int i=1;i<10;i++) {
 			try {
 			template.send(topic, "Number->"+i);
 			System.out.println(i);
