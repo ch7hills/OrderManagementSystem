@@ -1,12 +1,8 @@
 package com.hills.consumer;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.PartitionOffset;
-import org.springframework.kafka.annotation.TopicPartition;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +22,7 @@ public class Consumer3 {
 	 @KafkaListener(topics="${topic}",groupId ="${kafka-group-two}", containerFactory = "GroupTwoConsumer") 
 	 public void consume(String message) {
 		 System.out.println("Cosumer 3:"+message); 
+		 throw new RecoverableDataAccessException("Custom Exception in Consumer 3");
 	 }
 	/*
 	@KafkaListener(topicPartitions = @TopicPartition(topic = "${topic}", partitions = { "3" }), groupId="${kafka-group-one}",containerFactory = "kafkaListenerContainerFactory")

@@ -14,6 +14,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hills.model.Room;
@@ -29,9 +30,9 @@ public class ProducerController {
 	@GetMapping("/send")
 	public String sendData() {
 		Map<String, String> input = new HashMap<>();
-		for (int i = 1; i < 10; i++) {
+		for (int i = 1; i < 30; i++) {
 			try {
-				ListenableFuture<SendResult<String, String>> result = template.send(topic, "key", "Number->" + i);
+				ListenableFuture<SendResult<String, String>> result = template.send(topic, null, "Number->" + i);
 				result.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
 
 					@Override
@@ -70,7 +71,7 @@ public class ProducerController {
 			return new ResponseEntity<>("Please enter valid id", HttpStatus.BAD_REQUEST);
 		}
 		try {
-			ListenableFuture<SendResult<String, String>> result = template.send(topic, "room", "Room->" + room.toString());
+			ListenableFuture<SendResult<String, String>> result = template.send(topic, null, "Room->" + room.toString());
 			result.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
 
 				@Override
@@ -92,5 +93,32 @@ public class ProducerController {
 		}
 
 		return new ResponseEntity<Room>(room, HttpStatus.OK);
+	}
+	
+	@GetMapping("/sendMessage")
+	public String sendMessage(@RequestParam(name="message") String message) {
+		try {
+			ListenableFuture<SendResult<String, String>> result = template.send(topic, null, message);
+			result.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+
+				@Override
+				public void onSuccess(SendResult<String, String> result) {
+					// TODO Auto-generated method stub
+					successHandler(result);
+				}
+
+				@Override
+				public void onFailure(Throwable ex) {
+					// TODO Auto-generated method stub
+					failureHandler(ex);
+				}
+
+			});
+			System.out.println(message);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return "success";
+
 	}
 }
