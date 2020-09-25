@@ -1,30 +1,35 @@
 package com.hills.consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.PartitionOffset;
-import org.springframework.kafka.annotation.TopicPartition;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hills.Service.RoomNotFoundException;
+import com.hills.Service.RoomService;
+import com.hills.models.Room;
 
 @Service
 public class Consumer1 {
 	
-	@Value("${kafka-group-one}")
+	@Autowired
+	RoomService roomService;
+	
+	@Value("${spring.kafka.group-one}")
 	private String groupOne;
 	
-	@Value("${kafka-group-two}")
+	@Value("${spring.kafka.group-two}")
 	private String groupTwo;
 	
+	@Autowired
+	ObjectMapper mapper;
 	
-	 @KafkaListener(topics="${topic}",groupId ="${kafka-group-one}", containerFactory = "GroupOneConsumer") 
-	 public void consume(String message) {
-		 System.out.println("Cosumer 1:"+message); 
+	
+	 @KafkaListener(topics="${spring.topic}",groupId ="${spring.kafka.group-one}", containerFactory = "GroupOneConsumer") 
+	 public void consume(Room room) throws RoomNotFoundException {
+		 room = roomService.createRoom(room);
+		 System.out.println("Cosumer 1:"+room); 
 	 }
 	 
 	/*

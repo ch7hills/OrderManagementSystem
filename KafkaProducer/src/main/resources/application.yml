@@ -1,0 +1,74 @@
+spring:
+  profiles:
+    active: nonprod
+---
+spring:
+  profiles: local
+  kafka:
+    template:
+      default-topic: library-events
+    producer:
+      bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        acks: all
+        retries: 10
+        retry.backoff.ms: 1000
+    admin:
+      properties:
+        bootstrap.servers: localhost:9092,localhost:9093,localhost:9094
+---
+spring:
+  profiles: nonprod
+  cluster: localhost:9095,localhost:9096
+  topic: test-replication-topic
+  kafka:
+    template:
+      default-topic: test-replication-topic
+    producer:
+      bootstrap-servers: localhost:9095,localhost:9096
+      #key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #value-serializer: org.apache.kafka.common.serialization.JsonSerializer
+    ssl:
+      trust-store-location: /SSL_KAFKA/server.truststore.jks
+      trust-store-password: password
+      key-store-location: /SSL_KAFKA/server.truststore.jks
+      key-store-password: password
+    properties:
+      acks: 1
+      retries: 10
+      //retry.backoff.ms: 1000
+      security:
+        protocol: SSL
+      ssl.endpoint.identification.algorithm:
+  datasource:
+      url: jdbc:mysql://localhost/7hills?createDatabaseIfNotExist=true&autoReconnect=true&useSSL=false
+      username: root
+      password:
+      platform: mysql
+      testWhileIdle: true 
+      validationQuery: SELECT 1
+# Show or not log for each sql query
+  jpa:
+      show-sql: true
+
+# Hibernate ddl auto (create, create-drop, update): with "update" the database
+# schema will be automatically updated accordingly to java entities found in
+# the project
+      hibernate.ddl-auto: update
+
+# Naming strategy
+#spring.jpa.hibernate.naming-strategy = org.hibernate.cfg.ImprovedNamingStrategy
+
+# Allows Hibernate to generate SQL optimized for a particular DBMS
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+
+---
+spring:
+  profiles: prod
+  kafka:
+    producer:
+      bootstrap-servers: prod:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer

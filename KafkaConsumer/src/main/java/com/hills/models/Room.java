@@ -1,4 +1,4 @@
-package com.hills.model;
+package com.hills.models;
 
 import java.time.LocalDateTime;
 
@@ -25,15 +25,9 @@ public class Room {
 
 	@UpdateTimestamp
 	private LocalDateTime updatedDateTime;
-	
+
 	public Room() {
 
-	}
-
-	public Room(long id, long value, String info) {
-		this.id=id;
-		this.name=value;
-		this.info=info;
 	}
 
 	public Room(long name, String info) {

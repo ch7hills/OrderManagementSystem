@@ -6,40 +6,28 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "room")
-public class Room {
+public class TopicRecovery {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private long name;
-	private String info;
 	
+	private String topicName;
+	
+	private String message;
+	
+	private int attempts;
+	
+	private String type;
 	@CreationTimestamp
 	private LocalDateTime createdDateTime;
 
 	@UpdateTimestamp
 	private LocalDateTime updatedDateTime;
-	
-	public Room() {
-
-	}
-
-	public Room(long id, long value, String info) {
-		this.id=id;
-		this.name=value;
-		this.info=info;
-	}
-
-	public Room(long name, String info) {
-		this.name = name;
-		this.info = info;
-	}
 
 	public long getId() {
 		return id;
@@ -49,22 +37,31 @@ public class Room {
 		this.id = id;
 	}
 
-	public long getName() {
-		return name;
+	public String getTopicName() {
+		return topicName;
 	}
 
-	public void setName(long name) {
-		this.name = name;
+	public void setTopicName(String topicName) {
+		this.topicName = topicName;
 	}
 
-	public String getInfo() {
-		return info;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setInfo(String info) {
-		this.info = info;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
+	public int getAttempts() {
+		return attempts;
+	}
+
+	public void setAttempts(int attempts) {
+		this.attempts = attempts;
+	}
+
+	
 	public LocalDateTime getCreatedDateTime() {
 		return createdDateTime;
 	}
@@ -81,8 +78,19 @@ public class Room {
 		this.updatedDateTime = updatedDateTime;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	@Override
 	public String toString() {
-		return "Room [id=" + id + ",  name=" + name + ", info=" + info + "]";
+		return "TopicRecovery [id=" + id + ", topicName=" + topicName + ", message=" + message + ", attempts="
+				+ attempts + ", type=" + type + ", createdDateTime=" + createdDateTime + ", updatedDateTime="
+				+ updatedDateTime + "]";
 	}
+	
 }

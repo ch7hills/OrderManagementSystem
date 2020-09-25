@@ -18,13 +18,16 @@ log.dirs=/tmp/kafka-logs
 
 #Start zookeeper server
 zookeeper-server-start.bat ../../config/zookeeper.properties
+
 #starting kafka server (broker) 1
 kafka-server-start.bat ../../config/server.properties
+
 #starting kafka server (broker) 2
 kafka-server-start.bat ../../config/server1.properties
+
 #create topic
 #Replication factor should not be more than kafka brokers(server instances)
-kafka-topics.bat --create     --zookeeper localhost:2181     --replication-factor 2    --partitions 4    --topic test-replication-topic
+kafka-topics.bat --create --zookeeper localhost:2181     --replication-factor 2    --partitions 4    --topic test-replication-topic
 
 kafka-topics.bat --describe --topic test-replication-topic --bootstrap-server localhost:9092
 kafka-console-producer.bat --topic test-replication-topic --bootstrap-server localhost:9092
@@ -34,3 +37,67 @@ URL:
 https://coralogix.com/log-analytics-blog/a-complete-introduction-to-apache-kafka/
 Split with special charecter along with spaces
 String[] tokens = s.split("[\\s!,?._'@]+");
+
+https://callistaenterprise.se/blogg/teknik/2018/10/26/synchronous-request-reply-over-kafka/
+
+
+=============================================== Kafka SSL=========================
+https://github.com/dilipsundarraj1/kafka-for-developers-using-spring-boot/blob/master/Kafka_Security.md
+https://code.google.com/archive/p/openssl-for-windows/downloads
+
+keytool -keystore server.keystore.jks -alias localhost -validity 365 -genkey -keyalg RSA
+
+keytool -list -v -keystore server.keystore.jks
+
+openssl req -new -x509 -keyout ca-key -out ca-cert -days 365 -subj "/CN=local-security-CA" -config E:\sw\openssl-0.9.8k_X64\openssl.cnf
+
+keytool -keystore server.keystore.jks -alias localhost -certreq -file cert-file
+
+openssl x509 -req -CA ca-cert -CAkey ca-key -in cert-file -out cert-signed -days 365 -CAcreateserial -passin pass:password
+
+keytool -printcert -v -file cert-signed
+
+keytool -keystore server.keystore.jks -alias CARoot -import -file ca-cert
+keytool -keystore server.keystore.jks -alias localhost -import -file cert-signed
+
+keytool -list -v -keystore server.keystore.jks
+
+keytool -keystore client.truststore.jks -alias CARoot -import -file ca-cert
+
+#in Server.properties
+listeners=PLAINTEXT://:9092,SSL://localhost:9096
+auto.create.topics.enable=false
+#port=9092
+#host.name=localhost
+ssl.keystore.location=/sw/kafka_2.11-2.4.0/SSL_KAFKA/server.keystore.jks
+ssl.keystore.password=password
+ssl.key.password=password
+ssl.endpoint.identification.algorithm=
+
+Create a topic
+kafka-topics.bat --create --topic test-topic -zookeeper localhost:2181 --replication-factor 1 --partitions 3
+
+Producing Messages to Secured Topic
+Command to Produce Messages to the secured topic
+
+kafka-console-producer.bat --broker-list localhost:9095,localhost:9096 --topic test-topic --producer.config client-ssl.properties
+
+kafka-console-consumer.bat --bootstrap-server localhost:9095,localhost:9096 --topic test-topic --consumer.config client-ssl.properties
+
+
+2 Way Authentication
+This config is to enable the client authentication at the cluster end.
+keytool -keystore server.truststore.jks -alias CARoot -import -file ca-cert
+
+Add the ssl.client.auth property in the server.properties.
+ssl.truststore.location=/sw/kafka_2.11-2.4.0/SSL_KAFKA/server.truststore.jks
+ssl.truststore.password=password
+ssl.client.auth=required
+
+copy server.keystore.jks to client.keystore.jks
+
+Kafka Client should have the following the config in the client-ssl.properties file
+ssl.keystore.type=JKS
+ssl.keystore.location=/sw/kafka_2.11-2.4.0/SSL_KAFKA/client.keystore.jks
+ssl.keystore.password=password
+ssl.key.password=password
